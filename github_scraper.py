@@ -1,26 +1,26 @@
 import requests
 import pandas as pd
 
-# Set up GitHub access
+
 access_token = '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'
 headers = {'Authorization': f'token {access_token}'}
 
-# GitHub API endpoints
+
 search_users_url = 'https://api.github.com/search/users'
 user_details_url = 'https://api.github.com/users/{}'
 repos_url_template = 'https://api.github.com/users/{}/repos'
 
-# Initialize lists to hold user and repository data
+
 users_data = []
 repositories = []
 
-# Function to clean up company names
+
 def clean_company(company):
     if company:
         company = company.lstrip('@').strip().upper()
     return company or ""
 
-# Fetch users from Bangalore with over 100 followers
+
 params = {
     'q': 'location:Bangalore followers:>100',
     'per_page': 100
@@ -35,14 +35,12 @@ while True:
     
     for user in users:
         user_login = user['login']
-        # Fetch user details
         user_response = requests.get(user_details_url.format(user_login), headers=headers)
         user_detail = user_response.json()
         
-        # Clean up company name
+
         company_cleaned = clean_company(user_detail.get("company", ""))
         
-        # Append user data
         user_info = {
             "login": user_detail.get("login", ""),
             "name": user_detail.get("name", ""),
@@ -57,8 +55,7 @@ while True:
             "created_at": user_detail.get("created_at", "")
         }
         users_data.append(user_info)
-
-        # Fetch up to 500 most recent repositories for each user
+        
         repo_page = 1
         user_repos = 0
         while user_repos < 500:
@@ -93,11 +90,9 @@ while True:
 
     page += 1
 
-# Convert user and repository data to DataFrames and save as CSV files
+
 users_df = pd.DataFrame(users_data)
 users_df.to_csv('users.csv', index=False)
 
 repos_df = pd.DataFrame(repositories)
 repos_df.to_csv('repositories.csv', index=False)
-
-print(f"Data fetching completed. Saved {len(users_data)} users and {len(repositories)} repositories.")
